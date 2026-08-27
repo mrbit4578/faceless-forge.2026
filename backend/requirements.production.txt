@@ -1,7 +1,14 @@
+# Emergent publishes its Universal LLM SDK through this provider index, not
+# through the public PyPI index.  The remaining packages still resolve from PyPI.
+--extra-index-url https://d33sy5i8bnduwe.cloudfront.net/simple/
+
 fastapi==0.110.1
 uvicorn[standard]==0.25.0
 python-dotenv==1.2.3
+# Motor 3.3.1 predates the PyMongo 4.9+ internal cursor layout.  Pinning avoids
+# the import failure caused by the newest unrestricted PyMongo release.
 motor==3.3.1
+pymongo==4.8.0
 python-multipart==0.0.32
 edge-tts==7.2.8
 gTTS==2.5.4
@@ -10,4 +17,3 @@ aiofiles==25.1.0
 pypdf==6.16.2
 python-docx==1.2.0
 emergentintegrations==0.2.0
-# Install faster-whisper separately when local/offline STT is required.
