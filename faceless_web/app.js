@@ -1,170 +1,97 @@
-const form = document.querySelector("#brief-form");
-const blueprintNode = document.querySelector("#blueprint");
-const emptyNode = document.querySelector("#empty-state");
-const blueprintButton = document.querySelector("#blueprint-button");
-const toastNode = document.querySelector("#toast");
+/*
+ * Static-host adapter.
+ * Vercel and GitHub Pages serve the visual interface but have no /api backend.
+ * This adapter returns a useful local blueprint instead of passing HTML to the
+ * legacy client as JSON. When the FastAPI service runs on the same domain, all
+ * requests pass straight through to the real API.
+ */
+(() => {
+  const nativeFetch = window.fetch.bind(window);
+  const configuredBase = String(window.FACELESS_FORGE_API_URL || "").replace(/\/$/, "");
+  const json = (body, status = 200) => new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json; charset=utf-8" },
+  });
 
-let currentBlueprint = null;
-let toastTimer = null;
-
-const $ = (selector) => document.querySelector(selector);
-const value = (selector) => $(selector).value.trim();
-const safe = (input = "") => String(input)
-  .replaceAll("&", "&amp;")
-  .replaceAll("<", "&lt;")
-  .replaceAll(">", "&gt;")
-  .replaceAll('"', "&quot;")
-  .replaceAll("'", "&#039;");
-
-function notify(message, isError = false) {
-  clearTimeout(toastTimer);
-  toastNode.textContent = message;
-  toastNode.classList.toggle("error", isError);
-  toastNode.classList.add("show");
-  toastTimer = setTimeout(() => toastNode.classList.remove("show"), 3400);
-}
-
-async function copyText(text, label = "Đã sao chép") {
-  if (!text) return notify("Chưa có nội dung để sao chép", true);
-  try {
-    await navigator.clipboard.writeText(text);
-    notify(label);
-  } catch {
-    notify("Trình duyệt không cho phép sao chép", true);
-  }
-}
-
-function collectBrief() {
-  return {
-    topic: value("#topic"),
-    niche: value("#niche"),
-    audience: value("#audience"),
-    platform: value("#platform"),
-    duration_sec: Number(value("#duration")),
-    tone: value("#tone"),
-    language: "Tiếng Việt",
-    monetization_goal: value("#goal"),
-    model: value("#model"),
+  const localBlueprint = (brief) => {
+    const topic = String(brief.topic || "ý tưởng của bạn").trim();
+    const duration = Math.max(15, Math.min(180, Number(brief.duration_sec || 45)));
+    const opening = `Bạn có từng tự hỏi vì sao ${topic} lại khiến nhiều người bỏ lỡ điều quan trọng nhất?`;
+    const purposes = ["Câu móc mở đầu", "Đặt vấn đề", "Bật mí insight", "Ví dụ trực quan", "Điểm then chốt", "Kết & CTA"];
+    const narrations = [
+      opening,
+      "Đây là điều phần lớn mọi người thường bỏ qua.",
+      "Hãy nhìn vào chi tiết này để thấy khác biệt.",
+      "Đặt nó vào một ví dụ đơn giản, dễ nhớ.",
+      "Điểm quan trọng là biến kiến thức thành hành động.",
+      "Lưu lại và theo dõi để xem phần tiếp theo.",
+    ];
+    const overlays = ["DỪNG LẠI 3 GIÂY", "ÍT AI ĐỂ Ý", "ĐIỂM MẤU CHỐT", "VÍ DỤ THỰC TẾ", "ÁP DỤNG NGAY", "LƯU VIDEO NÀY"];
+    const count = Math.max(4, Math.min(6, Math.round(duration / 8)));
+    const shots = Array.from({ length: count }, (_, index) => ({
+      start_sec: Math.round(index * duration / count),
+      end_sec: Math.round((index + 1) * duration / count),
+      purpose: purposes[Math.min(index, purposes.length - 1)],
+      visual: `Cảnh faceless giàu chuyển động minh hoạ ${topic}, bố cục dọc 9:16.`,
+      narration: narrations[Math.min(index, narrations.length - 1)],
+      on_screen_text: overlays[Math.min(index, overlays.length - 1)],
+      image_prompt: `Vertical 9:16 cinematic editorial illustration about ${topic}, faceless storytelling, premium lighting, clean center space for Vietnamese captions, no text, no watermark`,
+    }));
+    return {
+      fallback: true,
+      viral_score: 72,
+      concept: `Video ${String(brief.tone || "kể chuyện").toLowerCase()} giải mã ${topic} bằng nhịp nhanh, hình ảnh rõ ý và CTA tự nhiên.`,
+      why_it_can_work: ["Mở bằng câu hỏi tạo khoảng trống tò mò.", "Mỗi đoạn thay đổi hình ảnh để giữ nhịp xem.", "Kết thúc tạo lý do để lưu và quay lại xem phần tiếp theo."],
+      titles: [`Sự thật về ${topic} mà nhiều người bỏ lỡ`, `Đừng lướt: hiểu ${topic} trong ${duration} giây`, `Tại sao ${topic} quan trọng hơn bạn nghĩ?`],
+      thumbnail_text: "ĐỪNG BỎ QUA",
+      hook: opening,
+      script: `${opening} Chỉ trong vài giây tới, bạn sẽ thấy một góc nhìn khác. ${topic} không chỉ là một chi tiết thú vị; nó có thể thay đổi cách chúng ta nhìn vấn đề. Đầu tiên, hãy bắt đầu từ điều ít người để ý nhất. Tiếp theo, kết nối nó với một tình huống rất quen thuộc trong đời sống. Và đây là điểm mấu chốt: khi hiểu nguyên lý phía sau, bạn có thể áp dụng ngay thay vì chỉ xem rồi quên. Nếu bạn muốn phần tiếp theo sâu hơn, hãy lưu video này và theo dõi để không bỏ lỡ.`,
+      shots,
+      seo: {
+        description: `Một góc nhìn ngắn, dễ hiểu về ${topic}. Xem đến cuối và lưu lại nếu bạn thấy hữu ích.`,
+        hashtags: ["#faceless", "#shorts", "#contentcreator", "#viralvideo"],
+        pinned_comment: "Bạn muốn mình làm video tiếp theo về khía cạnh nào?",
+      },
+      monetization: {
+        angle: "Xây dựng series cùng một niche và chỉ dùng tư liệu có quyền sử dụng.",
+        cta: "Lưu video và theo dõi để xem phần tiếp theo.",
+        disclosure: "Không cam kết view hoặc doanh thu. Kiểm tra bản quyền và chính sách nền tảng trước khi đăng.",
+      },
+      production_checklist: [
+        "Kiểm chứng mọi số liệu/câu khẳng định.",
+        "Dùng hình, nhạc và footage có quyền thương mại.",
+        "Giữ chữ trên màn hình ngắn, tương phản tốt.",
+        "Xuất 9:16, xem lại phụ đề trước khi đăng.",
+      ],
+    };
   };
-}
 
-function tags(items = []) {
-  return items.map((item) => `<span class="tag">${safe(item)}</span>`).join("");
-}
+  window.fetch = async (resource, options) => {
+    const path = typeof resource === "string" ? resource : resource.url;
+    if (!path.startsWith("/api/")) return nativeFetch(resource, options);
+    const url = configuredBase ? `${configuredBase}${path}` : path;
 
-function titles(items = []) {
-  return items.map((item, index) => `<button type="button" class="copy-card" data-copy-title="${index}" data-index="TITLE 0${index + 1}">${safe(item)}</button>`).join("");
-}
-
-function shotCards(items = []) {
-  return items.map((shot, index) => `
-    <article class="shot">
-      <div class="shot-top"><span><span class="time">${safe(String(shot.start_sec).padStart(2, "0"))}–${safe(String(shot.end_sec).padStart(2, "0"))}s</span> <span class="purpose">${safe(shot.purpose)}</span></span><button class="prompt-copy" type="button" data-copy-prompt="${index}">COPY PROMPT</button></div>
-      <div class="shot-grid"><p><span class="label">VISUAL</span>${safe(shot.visual)}</p><p><span class="label">VOICE-OVER</span>${safe(shot.narration)}</p></div>
-      <span class="overlay">${safe(shot.on_screen_text)}</span>
-    </article>`).join("");
-}
-
-function renderBlueprint(plan) {
-  const reasons = (plan.why_it_can_work || []).map((item) => `<li>${safe(item)}</li>`).join("");
-  const checks = (plan.production_checklist || []).map((item) => `<li>${safe(item)}</li>`).join("");
-  const seo = plan.seo || {};
-  const money = plan.monetization || {};
-  blueprintNode.innerHTML = `
-    <div class="blueprint-head">
-      <div><div class="kicker">VIRAL BLUEPRINT · ${plan.fallback ? "LOCAL PLAN MODE" : "AI STRATEGY"}</div><h2>${safe(plan.concept)}</h2></div>
-      <div class="score"><b>${safe(plan.viral_score)}</b><small>fit score</small></div>
-    </div>
-    <div class="info-grid"><div class="info-card"><span class="label">HOOK · 0–3 GIÂY</span><p>${safe(plan.hook)}</p></div><div class="info-card"><span class="label">THUMBNAIL TEXT</span><p class="thumb">${safe(plan.thumbnail_text)}</p></div></div>
-    <section class="section-card"><div class="section-title">3 hướng tiêu đề <small>Bấm để copy</small></div><div class="title-grid">${titles(plan.titles)}</div></section>
-    <section class="section-card"><div class="section-title">Lời bình hoàn chỉnh <small>${(plan.script || "").trim().split(/\s+/).filter(Boolean).length} từ</small></div><p class="script">${safe(plan.script)}</p><div class="tool-row"><button class="button ghost" type="button" data-copy-script>⧉ Copy voice-over</button><button class="button ghost" type="button" data-copy-publish>⧉ Copy publish pack</button><button class="button ghost forge" type="button" data-produce>✦ Dựng video MP4 tự động</button></div><div class="job" id="production-job"><div class="job-line"><span id="job-message">Đang chuẩn bị...</span><b id="job-percent">0%</b></div><div class="bar"><i id="job-bar"></i></div><div id="render-result" class="render-result"></div></div></section>
-    <section class="section-card"><div class="section-title">Shot list &amp; visual prompt <small>1 cảnh / 5–9 giây</small></div><div class="shot-list">${shotCards(plan.shots)}</div></section>
-    <div class="bottom-grid"><section class="section-card"><div class="section-title">Gói xuất bản <small>SEO dễ đọc</small></div><p class="publish-copy">${safe(seo.description)}</p><div class="tags">${tags(seo.hashtags)}</div><p class="publish-copy"><span class="label">GHIM BÌNH LUẬN</span>${safe(seo.pinned_comment)}</p></section><section class="section-card"><div class="section-title">Đăng có trách nhiệm <small>CHECK TRƯỚC KHI POST</small></div><ul class="checklist">${checks}</ul><p class="notice">${safe(money.disclosure)}</p></section></div>
-    <section class="section-card production"><div class="section-title">Vì sao hướng này có thể giữ nhịp xem <small>GỢI Ý, KHÔNG PHẢI CAM KẾT</small></div><ul class="checklist">${reasons}</ul><p class="notice">${safe(money.angle)}<br /><br /><b>CTA:</b> ${safe(money.cta)}</p></section>`;
-  emptyNode.classList.add("hidden");
-  blueprintNode.classList.remove("hidden");
-  blueprintNode.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-function publishPack() {
-  const seo = currentBlueprint?.seo || {};
-  return [currentBlueprint?.titles?.[0], seo.description, ...(seo.hashtags || []), "", `Bình luận ghim: ${seo.pinned_comment || ""}`].filter(Boolean).join("\n");
-}
-
-async function pollJob(jobId) {
-  const job = $("#production-job");
-  const message = $("#job-message");
-  const percent = $("#job-percent");
-  const bar = $("#job-bar");
-  const result = $("#render-result");
-  job.classList.add("show");
-  for (;;) {
-    const response = await fetch(`/api/jobs/${encodeURIComponent(jobId)}`);
-    if (!response.ok) throw new Error("Không đọc được trạng thái render");
-    const data = await response.json();
-    const progress = Math.max(0, Math.min(100, Number(data.progress || 0)));
-    message.textContent = data.message || "Đang dựng video...";
-    percent.textContent = `${progress}%`;
-    bar.style.width = `${progress}%`;
-    if (data.status === "done") {
-      const media = data.result || {};
-      result.innerHTML = `${media.video_url ? `<video controls src="${safe(media.video_url)}" aria-label="Video Faceless Forge"></video><a class="download" href="${safe(media.video_url)}" download>TẢI VIDEO MP4 ↓</a>` : ""}${media.audio_url ? `<a class="download" href="${safe(media.audio_url)}" download> · TẢI VOICE-OVER MP3 ↓</a>` : ""}`;
-      notify("Video faceless đã render xong!");
-      return;
+    if (path === "/api/forge/blueprint") {
+      try {
+        const response = await nativeFetch(url, options);
+        const contentType = response.headers.get("content-type") || "";
+        if (response.ok && contentType.includes("application/json")) return response;
+      } catch {
+        // Static hosts and offline pages intentionally use the local plan below.
+      }
+      let brief = {};
+      try { brief = JSON.parse(options?.body || "{}"); } catch { /* use defaults */ }
+      return json(localBlueprint(brief));
     }
-    if (data.status === "error") throw new Error(data.error || data.message || "Render thất bại");
-    await new Promise((resolve) => setTimeout(resolve, 1800));
-  }
-}
 
-async function produceVideo(button) {
-  if (!currentBlueprint) return;
-  button.disabled = true;
-  button.textContent = "◌ Đang tạo visual, voice & MP4...";
-  try {
-    const response = await fetch("/api/forge/produce", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ blueprint: currentBlueprint, voice: "vi-VN-HoaiMyNeural", image_model: "nano-banana", resolution: "1080x1920" }),
-    });
-    const job = await response.json();
-    if (!response.ok) throw new Error(job.detail || "Không thể bắt đầu dựng video");
-    await pollJob(job.id);
-  } catch (error) {
-    notify(error.message || "Dựng video thất bại", true);
-  } finally {
-    button.disabled = false;
-    button.textContent = "✦ Dựng video MP4 tự động";
-  }
-}
+    if (configuredBase) return nativeFetch(url, options);
+    return json({
+      detail: "Bạn đang dùng bản giao diện tĩnh. Để tạo ảnh, giọng đọc và MP4 thật, hãy mở bản Docker trên Render/Railway và cấu hình MONGO_URL cùng EMERGENT_LLM_KEY.",
+    }, 503);
+  };
 
-form.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const brief = collectBrief();
-  if (brief.topic.length < 3) return notify("Hãy nhập chủ đề cụ thể hơn", true);
-  blueprintButton.disabled = true;
-  blueprintButton.innerHTML = "<span>◌</span> Đang xây blueprint...";
-  try {
-    const response = await fetch("/api/forge/blueprint", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(brief) });
-    const plan = await response.json();
-    if (!response.ok) throw new Error(plan.detail || "Không thể tạo blueprint");
-    currentBlueprint = plan;
-    renderBlueprint(plan);
-    notify(plan.fallback ? "Đã tạo khung kế hoạch local" : "Viral Blueprint đã sẵn sàng");
-  } catch (error) {
-    notify(error.message || "Không thể kết nối Forge", true);
-  } finally {
-    blueprintButton.disabled = false;
-    blueprintButton.innerHTML = "<span>✦</span> Tạo Viral Blueprint";
-  }
-});
-
-blueprintNode.addEventListener("click", (event) => {
-  const target = event.target.closest("button");
-  if (!target || !currentBlueprint) return;
-  if (target.dataset.copyTitle !== undefined) return copyText(currentBlueprint.titles?.[Number(target.dataset.copyTitle)], "Đã copy title");
-  if (target.dataset.copyPrompt !== undefined) return copyText(currentBlueprint.shots?.[Number(target.dataset.copyPrompt)]?.image_prompt, "Đã copy visual prompt");
-  if (target.hasAttribute("data-copy-script")) return copyText(currentBlueprint.script, "Đã copy voice-over");
-  if (target.hasAttribute("data-copy-publish")) return copyText(publishPack(), "Đã copy gói xuất bản");
-  if (target.hasAttribute("data-produce")) return produceVideo(target);
-});
+  const script = document.createElement("script");
+  script.src = "app.legacy.js";
+  script.async = false;
+  document.body.appendChild(script);
+})();
