@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+.pytest_cache/
+backend/media/
+backend/.cache/
+node_modules/
+*.mp3
+*.mp4
+*.wav
+*.png
+*.jpg
+*.jpeg
+*.zip

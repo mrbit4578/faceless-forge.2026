@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: faceless-forge
+    runtime: docker
+    plan: starter
+    healthCheckPath: /api/health
+    envVars:
+      - key: MONGO_URL
+        sync: false
+      - key: DB_NAME
+        value: faceless_forge
+      - key: EMERGENT_LLM_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        value: "*"

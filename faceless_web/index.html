@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#071314" />
+    <meta name="description" content="Faceless Forge — studio tạo video faceless từ ý tưởng đến MP4." />
+    <title>Faceless Forge — Video Production OS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="noise"></div>
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="Faceless Forge">
+        <span class="brand-mark">✦</span>
+        <span><b>FACELESS</b> FORGE<small>Video Production OS</small></span>
+      </a>
+      <span class="status"><i></i> Studio ready</span>
+    </header>
+
+    <main id="top" class="shell">
+      <section class="hero">
+        <div class="eyebrow">CREATOR WORKFLOW · ONE BRIEF TO MP4</div>
+        <h1>Đừng chỉ tạo video.<br /><em>Hãy sản xuất một series.</em></h1>
+        <p>Faceless Forge biến một ý tưởng thành chiến lược viral có trách nhiệm: hook, kịch bản, shot list, visual prompt, voice-over, phụ đề và video dọc sẵn sàng xuất bản.</p>
+        <div class="hero-pills"><span>Hook 3 giây</span><span>Visual 9:16</span><span>Voice-over AI</span><span>MP4 + SRT</span><span>SEO package</span></div>
+      </section>
+
+      <section class="workspace" aria-label="Video creation workspace">
+        <aside class="brief-panel panel">
+          <div class="panel-heading"><span class="step">01</span><div><h2>Creative brief</h2><p>Nói cho Forge biết video bạn muốn làm.</p></div></div>
+          <form id="brief-form">
+            <label>Chủ đề video<textarea id="topic" rows="4" required minlength="3" placeholder="Ví dụ: 3 dấu hiệu bạn đang bị quá tải thông tin"></textarea></label>
+            <div class="form-grid">
+              <label>Niche<input id="niche" value="Giáo dục / kiến thức" /></label>
+              <label>Thời lượng<select id="duration"><option value="30">30 giây</option><option value="45" selected>45 giây</option><option value="60">60 giây</option><option value="90">90 giây</option></select></label>
+            </div>
+            <label>Khán giả mục tiêu<input id="audience" value="18–34 tuổi, thích nội dung dễ hiểu" /></label>
+            <div class="form-grid">
+              <label>Nền tảng<select id="platform"><option>TikTok &amp; YouTube Shorts</option><option>TikTok</option><option>YouTube Shorts</option><option>Instagram Reels</option></select></label>
+              <label>Phong cách<select id="tone"><option>Kể chuyện giàu nhịp</option><option>Bí ẩn / tò mò</option><option>Giải thích dễ hiểu</option><option>Tạo động lực</option><option>Review chân thực</option></select></label>
+            </div>
+            <label>Mục tiêu kênh<input id="goal" value="Xây dựng tệp khán giả để phát triển kênh" /></label>
+            <label>Model AI<select id="model"><option value="gemini-flash">Gemini Flash · nhanh</option><option value="gpt-5.4">GPT-5.4 · chất lượng</option><option value="gpt-4.1-mini">GPT-4.1 Mini · tiết kiệm</option><option value="claude-sonnet">Claude Sonnet · sâu sắc</option></select></label>
+            <button class="button primary" id="blueprint-button" type="submit"><span>✦</span> Tạo Viral Blueprint</button>
+          </form>
+          <p class="fineprint">Forge đề xuất hướng làm nội dung, không cam kết view, doanh thu hay việc được bật kiếm tiền.</p>
+        </aside>
+
+        <section class="output-panel">
+          <div class="empty-state" id="empty-state"><div class="empty-icon">✦</div><h2>Blueprint của bạn sẽ xuất hiện ở đây</h2><p>Nhập một chủ đề cụ thể. Forge sẽ thiết kế toàn bộ dây chuyền sản xuất, từ câu móc mở đầu tới checklist trước khi đăng.</p><div class="empty-flow"><span>Ý tưởng</span><b>→</b><span>Kịch bản</span><b>→</b><span>Visual</span><b>→</b><span>MP4</span></div></div>
+          <div id="blueprint" class="blueprint hidden" aria-live="polite"></div>
+        </section>
+      </section>
+
+      <section class="process-strip">
+        <div><b>01</b><span>Brief có insight</span></div><div><b>02</b><span>Blueprint &amp; script</span></div><div><b>03</b><span>Visual + voice</span></div><div><b>04</b><span>MP4 &amp; publish pack</span></div>
+      </section>
+    </main>
+    <div id="toast" class="toast" role="status"></div>
+    <script src="app.js"></script>
+  </body>
+</html>
