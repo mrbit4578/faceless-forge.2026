@@ -16,4 +16,6 @@ COPY backend /app/backend
 COPY faceless_web /app/faceless_web
 
 WORKDIR /app/backend
-CMD sh -c "uvicorn forge_app:app --host 0.0.0.0 --port ${PORT}"
+# This entry point preserves the workstation APIs and upgrades the Forge button
+# to the multi-scene visual, voice-over and caption production pipeline.
+CMD sh -c "uvicorn forge_premium_app:app --host 0.0.0.0 --port ${PORT}"
